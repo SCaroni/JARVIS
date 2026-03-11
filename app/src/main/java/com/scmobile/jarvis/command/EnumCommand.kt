@@ -6,6 +6,11 @@ enum class EnumCommand {
     READ,
     LIST,
     DELETE,
+    HELP,
+    CLEAR,
+    COUNT,
+    EXISTS,
+    VERSION,
     UNKNOWN
 
 }
