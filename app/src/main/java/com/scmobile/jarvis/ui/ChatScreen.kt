@@ -12,6 +12,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 
 import com.scmobile.jarvis.command.CommandParser
 import com.scmobile.jarvis.command.ExecutorCommand
@@ -112,7 +113,13 @@ fun ChatScreen(memory: JarvisMemory) {
                     cursorColor = TerminalGreen
                 ),
 
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = TerminalGreen
+                    )
+                    .padding(horizontal = 8.dp)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
