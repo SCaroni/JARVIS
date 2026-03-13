@@ -11,6 +11,7 @@ enum class EnumCommand {
     COUNT,
     EXISTS,
     VERSION,
+    TIME,
     UNKNOWN
 
 }

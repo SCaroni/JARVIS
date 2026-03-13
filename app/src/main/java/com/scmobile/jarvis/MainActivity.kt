@@ -3,6 +3,7 @@ package com.scmobile.jarvis
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Build
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,10 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
 import com.scmobile.jarvis.ui.theme.JarvisTheme
-import com.scmobile.jarvis.ui.StartScreen
 import com.scmobile.jarvis.ui.ChatScreen
 import com.scmobile.jarvis.ui.BootScreen
-import com.scmobile.jarvis.ui.VoiceScreen
 import com.scmobile.jarvis.memory.JarvisMemory
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +29,17 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        checkMicrophonePermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1
+                )
+            }
+        }
 
         setContent {
 
@@ -43,22 +52,16 @@ class MainActivity : ComponentActivity() {
                 when (screen) {
 
                     "boot" -> BootScreen {
-                        screen = "start"
+                        screen = "chat"
                     }
 
-                    "start" -> StartScreen(
-                        onTextMode = { screen = "chat" },
-                        onVoiceMode = { screen = "voice" }
-                    )
-
                     "chat" -> ChatScreen(memory)
-
-                    "voice" -> VoiceScreen(memory)
 
                 }
 
             }
         }
+
     }
 
     private fun checkMicrophonePermission() {

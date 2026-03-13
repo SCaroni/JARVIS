@@ -63,4 +63,14 @@ class JarvisMemory(private val context: Context) {
 
         save(memory)
     }
+
+    fun clear() {
+
+        val memory = load()
+
+        memory.clear()
+
+        save(memory)
+
+    }
 }

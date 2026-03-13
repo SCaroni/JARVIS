@@ -46,6 +46,10 @@ class CommandParser {
                 JarvisCommand(EnumCommand.VERSION)
             }
 
+            upper.startsWith("TIME") -> {
+                JarvisCommand(EnumCommand.TIME, raw)
+            }
+
             else -> {
                 JarvisCommand(EnumCommand.UNKNOWN, raw)
             }

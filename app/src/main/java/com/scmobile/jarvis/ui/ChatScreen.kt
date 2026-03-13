@@ -15,6 +15,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.input.key.*
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.platform.LocalContext
 
 import com.scmobile.jarvis.command.CommandParser
 import com.scmobile.jarvis.command.ExecutorCommand
@@ -31,8 +33,10 @@ import com.scmobile.jarvis.ui.theme.TerminalBackground
 @Composable
 fun ChatScreen(memory: JarvisMemory) {
 
+    val context = LocalContext.current
+
     val parser = remember { CommandParser() }
-    val executor = remember { ExecutorCommand(memory) }
+    val executor = remember { ExecutorCommand(memory, context) }
     val engine = remember { JarvisEngine(parser, executor) }
     val processor = remember { ProcessorCommand(engine) }
 
@@ -47,7 +51,9 @@ fun ChatScreen(memory: JarvisMemory) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(messages.size) {
-        listState.animateScrollToItem(messages.size)
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.lastIndex)
+        }
     }
 
     Column(
@@ -70,7 +76,7 @@ fun ChatScreen(memory: JarvisMemory) {
             color = TerminalText
         )
 
-        Divider(
+        HorizontalDivider(
             color = TerminalDivider,
             thickness = 1.dp
         )
@@ -87,7 +93,12 @@ fun ChatScreen(memory: JarvisMemory) {
 
                 Text(
                     text = msg,
-                    color = TerminalText,
+                    color = when {
+                        msg.startsWith("< MEMORY >") -> TerminalGreen
+                        msg.startsWith("< SYSTEM >") -> TerminalPrompt
+                        msg.startsWith("JARVIS COMMANDS") -> TerminalGreen
+                        else -> TerminalText
+                    },
                     fontFamily = FontFamily.Monospace,
                     fontSize = 15.sp,
                     modifier = Modifier.padding(vertical = 2.dp)
@@ -104,7 +115,7 @@ fun ChatScreen(memory: JarvisMemory) {
 
             Text(
                 text = "C:\\JARVIS> ",
-                color = TerminalPrompt,
+                color = TerminalText,
                 fontFamily = FontFamily.Monospace
             )
 
@@ -135,9 +146,10 @@ fun ChatScreen(memory: JarvisMemory) {
                     .weight(1f)
                     .border(
                         width = 1.dp,
-                        color = TerminalGreen
+                        color = TerminalGreen,
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = 4.dp)
                     .onPreviewKeyEvent { event ->
 
                         if (event.type == KeyEventType.KeyDown) {
@@ -200,8 +212,11 @@ fun ChatScreen(memory: JarvisMemory) {
 
                         val response = processor.handle(input)
 
-                        messages.add("USER: $input")
-                        messages.add("JARVIS: $response")
+                        messages.add("C:\\JARVIS> $input")
+
+                        response.lines().forEach { line ->
+                            messages.add(line)
+                        }
 
                         input = ""
                     }
@@ -214,19 +229,63 @@ fun ChatScreen(memory: JarvisMemory) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = {
-
-                val response = processor.handle("LIST")
-
-                messages.add("USER: LIST")
-                messages.add("JARVIS: $response")
-
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Mostrar Memória")
-        }
 
+            Button(
+                onClick = {
+                    if (historyIndex > 0) {
+                        historyIndex--
+                        input = history[historyIndex]
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "▲",
+                    fontSize = 24.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+
+            Button(
+                onClick = {
+
+                    val response = processor.handle("LIST")
+
+                    messages.add("C:\\JARVIS> LIST")
+
+                    response.lines().forEach { line ->
+                        messages.add(line)
+                    }
+
+                },
+                modifier = Modifier.weight(3f)
+            ) {
+                Text("Mostrar Memória")
+            }
+
+            Button(
+                onClick = {
+                    if (historyIndex < history.size - 1) {
+                        historyIndex++
+                        input = history[historyIndex]
+                    } else {
+                        historyIndex = history.size
+                        input = ""
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "▼",
+                    fontSize = 24.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+
+        }
     }
 }
